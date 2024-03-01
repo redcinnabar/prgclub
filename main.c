@@ -48,19 +48,47 @@ int main(void)
 	/* clear the screen to black */
 	clear_to_color(screen, makecol(0, 0, 0));
 
+	BITMAP *grass1, *grass2, *grass3;
+	BITMAP *road1, *road2;
+	BITMAP *car;
+
+	grass1 = create_sub_bitmap(tiles_bmp, 0, 0, 64, 64);
+	grass2 = create_sub_bitmap(tiles_bmp, 0, 64, 64, 64);
+	grass3 = create_sub_bitmap(tiles_bmp, 0, 64 * 2, 64, 64);
+	road1 = create_sub_bitmap(tiles_bmp, 64, 0, 64, 64);
+	road2 = create_sub_bitmap(tiles_bmp, 64, 64, 64, 64);
+	car = create_sub_bitmap(tiles_bmp, 64 * 2, 0, 24, 64);
+
 	/* draw all tiles */
-	int h = tiles_bmp->h;
-	if (screen->h < h)
-		h = screen->h;
-	int w = tiles_bmp->w;
-	if (screen->w < w)
-		w = screen->w;
-	blit(tiles_bmp, screen, 0, 0, 0, 0, w, h);
+	blit(grass1, screen, 0, 0, 0, 0, 64, 64);
+	blit(grass2, screen, 0, 0, 64, 0, 64, 64);
+	blit(grass3, screen, 0, 0, 0, 64, 64, 64);
+	blit(grass1, screen, 0, 0, 64, 64, 64, 64);
+	blit(grass2, screen, 0, 0, 0, 64 * 2, 64, 64);
+	blit(grass3, screen, 0, 0, 64, 64 * 2, 64, 64);
+
+	blit(road1, screen, 0, 0, 64 * 2, 0, 64, 64);
+	blit(road2, screen, 0, 0, 64 * 2, 64, 64, 64);
+	blit(road1, screen, 0, 0, 64 * 2, 64 * 2, 64, 64);
+
+	blit(grass2, screen, 0, 0, 64 * 3, 0, 64, 64);
+	blit(grass3, screen, 0, 0, 64 * 4, 0, 64, 64);
+	blit(grass1, screen, 0, 0, 64 * 3, 64, 64, 64);
+
+	draw_sprite(screen, car, 64 * 2 + 32 + 4, 64 * 2 - 8);
+	
 
 	release_screen();
 
 	/* wait for any key */
 	readkey();
+
+	destroy_bitmap(grass1);
+	destroy_bitmap(grass2);
+	destroy_bitmap(grass3);
+	destroy_bitmap(road1);
+	destroy_bitmap(road2);
+	destroy_bitmap(car);
 
 	destroy_bitmap(tiles_bmp);
 
