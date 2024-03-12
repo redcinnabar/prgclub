@@ -10,6 +10,24 @@ enum tile_type_main {
 	TILE_GRASS3,
 	TILE_ROAD1,
 	TILE_ROAD2,
+	TILE_WATER1,
+	TILE_WATER2,
+	TILE_WATER3,
+	TILE_WATER_BR1,
+	TILE_WATER_BR2,
+	TILE_WATER_BR3,
+	TILE_WATER_BL1,
+	TILE_WATER_BL2,
+	TILE_WATER_BL3,
+	TILE_WATER_BT,
+	TILE_WATER_BB,
+	TILE_WATER_BTR,
+	TILE_WATER_BTL,
+	TILE_WATER_BBR,
+	TILE_WATER_BBL,
+	TILE_SAND1,
+	TILE_SAND2,
+	TILE_SAND3,
 	TILE_LAST_MAIN
 };
 
@@ -57,7 +75,25 @@ struct type_xy index_64[TILE_LAST_MAIN] = {
 	{ TILE_GRASS2, 0, 1 },
 	{ TILE_GRASS3, 0, 2 },
 	{ TILE_ROAD1, 1, 0 },
-	{ TILE_ROAD2, 1, 1 }
+	{ TILE_ROAD2, 1, 1 },
+	{ TILE_WATER1, 2, 3 },
+	{ TILE_WATER2, 2, 4 },
+	{ TILE_WATER3, 2, 5 },
+	{ TILE_WATER_BR1, 0, 3 },
+	{ TILE_WATER_BR2, 0, 4 },
+	{ TILE_WATER_BR3, 0, 5 },
+	{ TILE_WATER_BL1, 1, 3 },
+	{ TILE_WATER_BL2, 1, 4 },
+	{ TILE_WATER_BL3, 1, 5 },
+	{ TILE_WATER_BT, 2, 6 },
+	{ TILE_WATER_BB, 2, 7 },
+	{ TILE_WATER_BTR, 0, 6 },
+	{ TILE_WATER_BTL, 1, 6 },
+	{ TILE_WATER_BBR, 0, 7 },
+	{ TILE_WATER_BBL, 1, 7 },
+	{ TILE_SAND1, 3, 0 },
+	{ TILE_SAND2, 3, 1 },
+	{ TILE_SAND3, 3, 2 }
 };
 
 struct tile_load_info tile64_load_info = {
@@ -74,13 +110,22 @@ struct tile_load_info tile24_64_load_info = {
 };
 
 /* map based on 64x64 tiles */
-int tiles_64_arr1[] = { TILE_GRASS1, TILE_GRASS2, TILE_ROAD1, TILE_GRASS2, TILE_GRASS3 };
-int tiles_64_arr2[] = { TILE_GRASS3, TILE_GRASS1, TILE_ROAD2, TILE_GRASS1, TILE_GRASS2 };
-int tiles_64_arr3[] = { TILE_GRASS2, TILE_GRASS3, TILE_ROAD1, TILE_GRASS3, TILE_GRASS1 };
-int *tiles_64_arr[] = { tiles_64_arr1, tiles_64_arr2, tiles_64_arr3 };
+int tiles_64_arr1[] = { TILE_SAND1, TILE_SAND2, TILE_ROAD1, TILE_SAND3, TILE_SAND1 };
+int tiles_64_arr2[] = { TILE_SAND2, TILE_SAND3, TILE_ROAD2, TILE_SAND2, TILE_SAND3 };
+int tiles_64_arr3[] = { TILE_WATER_BT, TILE_WATER_BTR, TILE_ROAD1, TILE_WATER_BTL, TILE_WATER_BT };
+int tiles_64_arr4[] = { TILE_WATER2, TILE_WATER_BR1, TILE_ROAD1, TILE_WATER_BL1, TILE_WATER3 };
+int tiles_64_arr5[] = { TILE_WATER1, TILE_WATER_BR2, TILE_ROAD2, TILE_WATER_BL2, TILE_WATER2 };
+int tiles_64_arr6[] = { TILE_WATER_BB, TILE_WATER_BBR, TILE_ROAD1, TILE_WATER_BBL, TILE_WATER_BB };
+int tiles_64_arr7[] = { TILE_GRASS1, TILE_GRASS2, TILE_ROAD1, TILE_GRASS2, TILE_GRASS3 };
+int tiles_64_arr8[] = { TILE_GRASS3, TILE_GRASS1, TILE_ROAD2, TILE_GRASS1, TILE_GRASS2 };
+int tiles_64_arr9[] = { TILE_GRASS2, TILE_GRASS3, TILE_ROAD1, TILE_GRASS3, TILE_GRASS1 };
+int *tiles_64_arr[] = {
+	tiles_64_arr1, tiles_64_arr2, tiles_64_arr3, tiles_64_arr4,
+	tiles_64_arr5, tiles_64_arr6, tiles_64_arr7, tiles_64_arr8,
+	tiles_64_arr9 };
 
 struct game_map_load_info map_load_info_data = {
-	5, 3, 64 * 2 + 32 + 4, 64 * 2 - 8, tiles_64_arr
+	5, 9, 64 * 2 + 32 + 4, 64 * 2 - 8, tiles_64_arr
 };
 
 
@@ -218,9 +263,10 @@ int main(void)
 
 	/* set a graphics mode sized 640x480 */
 	//if (set_gfx_mode(GFX_AUTODETECT_FULLSCREEN, 1920, 1080, 0, 0) != 0) {
-	//if (set_gfx_mode(GFX_AUTODETECT_FULLSCREEN, 800, 600, 0, 0) != 0) {
-	if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) != 0) {
+	if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 800, 600, 0, 0) != 0) {
+	//if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) != 0) {
 	//if (set_gfx_mode(GFX_XWINDOWS_FULLSCREEN, 1920, 1080, 0, 0) != 0) {
+	//if (set_gfx_mode(GFX_XWINDOWS_FULLSCREEN, 640, 480, 0, 0) != 0) {
 		if (set_gfx_mode(GFX_SAFE, 320, 200, 0, 0) != 0) {
 			set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
 			allegro_message(
