@@ -125,7 +125,7 @@ int *tiles_64_arr[] = {
 	tiles_64_arr9 };
 
 struct game_map_load_info map_load_info_data = {
-	5, 9, 64 * 2 + 32 + 4, 64 * 2 - 8, tiles_64_arr
+	5, 9, 64 * 2 + 32 + 4 + 12, 64 * 7 - 8, tiles_64_arr
 };
 
 
@@ -216,13 +216,24 @@ error:
 void show_game_map(struct game_map_info *map)
 {
 	int i, j;
-	int sx = map->tile_sizex;
-	int sy = map->tile_sizey;
+	const int sx = map->tile_sizex;
+	const int sy = map->tile_sizey;
+	int screen_car_y = screen->h * 3 / 4 - map->car_tile->h / 2;
+	int offset_y = map->posy - screen_car_y;
+
+	/* do not scroll last top part of map */
+	if (offset_y < 0) {
+		screen_car_y += offset_y;
+		offset_y = 0;
+	}
+
+	/* TODO: calculate initial and last visible j */
 	for (j = 0; j < map->load_info->sizey; j++)
 		for (i = 0; i < map->load_info->sizex; i++)
 			blit(map->tiles[j][i], screen, 0, 0,
-				sx * i, sy * j, sx, sy);
-	draw_sprite(screen, map->car_tile, map->posx, map->posy);
+				sx * i, sy * j - offset_y, sx, sy);
+	draw_sprite(screen, map->car_tile,
+			map->posx - map->car_tile->w / 2, screen_car_y);
 }
 
 void destroy_game_map(struct game_map_info *map)
@@ -249,10 +260,24 @@ void abort_on_error(const char *msg)
 }
 
 
+int g_logic_cycle_counter = 0;
+
+void timer_f()
+{
+	g_logic_cycle_counter++;
+}
+END_OF_FUNCTION(timer_f)
+
 int main(void)
 {
 	BITMAP *tiles_bmp;
 	PALETTE palette;
+	/* frames per second */
+	const int fps = 25;
+	/* each graph_per_logic logic cycle do redraw */
+	const int graph_per_logic = 5;
+	/* period between logic cycles */
+	const int logic_cycle_period = 1000 / (fps * graph_per_logic);
 
 	if (allegro_init() != 0)
 		return 1;
@@ -263,8 +288,9 @@ int main(void)
 
 	/* set a graphics mode sized 640x480 */
 	//if (set_gfx_mode(GFX_AUTODETECT_FULLSCREEN, 1920, 1080, 0, 0) != 0) {
-	if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 800, 600, 0, 0) != 0) {
-	//if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) != 0) {
+	//if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 800, 600, 0, 0) != 0) {
+	if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) != 0) {
+	//if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0) != 0) {
 	//if (set_gfx_mode(GFX_XWINDOWS_FULLSCREEN, 1920, 1080, 0, 0) != 0) {
 	//if (set_gfx_mode(GFX_XWINDOWS_FULLSCREEN, 640, 480, 0, 0) != 0) {
 		if (set_gfx_mode(GFX_SAFE, 320, 200, 0, 0) != 0) {
@@ -275,6 +301,11 @@ int main(void)
 			return 1;
 		}
 	}
+
+	install_timer();
+	LOCK_VARIABLE(g_logic_cycle_counter);
+	LOCK_FUNCTION(timer_f);
+	install_int(timer_f, logic_cycle_period);
 
 	acquire_screen();
 
@@ -300,8 +331,42 @@ int main(void)
 
 	release_screen();
 
-	/* wait for any key */
-	readkey();
+	/* main event loop */
+	int is_finish = 0;
+	int prev_cycle = 0;
+	while (!is_finish) {
+		/* process with all skipped logical cycles */
+		while (g_logic_cycle_counter > prev_cycle) {
+			prev_cycle++;
+			poll_keyboard();
+			if (key[KEY_ESC])
+				is_finish = 1;
+			if (key[KEY_UP])
+				map.posy--;
+			if (key[KEY_LEFT])
+				map.posx--;
+			if (key[KEY_RIGHT])
+				map.posx++;
+
+			/* finish game when we are on top of map */
+			if (map.posy <= 0)
+				is_finish = 1;
+		}
+		/* process graphical redraw cycle if required */
+		if (g_logic_cycle_counter >= graph_per_logic) {
+			show_game_map(&map);
+			/* if g_logic_cycle_counter > graph_per_logic
+			   frame skip is possible */
+			g_logic_cycle_counter = 0;
+			prev_cycle = 0;
+		}
+		/* Let OS do its tasks and sleep for 1 ms */
+		rest(1);
+	}
+
+	/* stop redraw timer */
+	remove_int(timer_f);
+
 
 	destroy_game_map(&map);
 err_game_map:
